@@ -1,10 +1,13 @@
+// index.js - KeyBot Hub (servidor que inicia bots Discord via POST do site Lovable)
+// Hospedado no Render.com - URL: https://keybotv1.onrender.com
+
 const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
 const app = express();
 
 app.use(express.json());
 
-// CORS completo para permitir chamadas do Lovable ou qualquer frontend
+// CORS completo para permitir chamadas do Lovable (frontend)
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -15,7 +18,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Armazena os clientes (sub-bots) por userId
+// Armazena os bots ativos por userId
 const clients = {};
 
 app.post('/start-bot', async (req, res) => {
