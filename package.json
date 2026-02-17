@@ -1,7 +1,7 @@
 {
   "name": "keybot-hub",
   "version": "1.0.0",
-  "description": "Hub para iniciar bots Discord via API",
+  "description": "Hub para iniciar bots Discord via API (KeyBot)",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -12,5 +12,7 @@
   },
   "engines": {
     "node": "18.x"
-  }
+  },
+  "author": "W7",
+  "license": "MIT"
 }
