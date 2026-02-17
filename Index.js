@@ -4,10 +4,14 @@ const app = express();
 
 app.use(express.json());
 
-// Permite CORS para o Lovable poder chamar (importante!)
+// Permite CORS para o Lovable chamar sem erro
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
   next();
 });
 
@@ -62,7 +66,6 @@ app.get('/', (req, res) => {
   res.send('KeyBot Hub - Online');
 });
 
-// Inicia o servidor sem crashar (mesmo sem token fixo)
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Hub rodando na porta ${port} - aguardando POSTs em /start-bot`);
