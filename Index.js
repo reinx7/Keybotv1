@@ -4,7 +4,7 @@ const app = express();
 
 app.use(express.json());
 
-// CORS completo para permitir chamadas do Lovable ou qualquer site
+// CORS completo para permitir chamadas do Lovable ou qualquer frontend
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -21,7 +21,7 @@ const clients = {};
 app.post('/start-bot', async (req, res) => {
   const { token, userId, durationMinutes } = req.body;
 
-  console.log(`[POST /start-bot] Recebido de ${userId} com duration ${durationMinutes} min`);
+  console.log(`[POST /start-bot] Requisição recebida de ${userId} | Duração: ${durationMinutes} min`);
 
   if (!token || !userId || !durationMinutes) {
     console.log('[ERRO] Campos faltando:', { token: !!token, userId: !!userId, durationMinutes: !!durationMinutes });
@@ -30,7 +30,7 @@ app.post('/start-bot', async (req, res) => {
 
   if (clients[userId]) {
     console.log(`[INFO] Bot já rodando para ${userId}`);
-    return res.json({ status: 'already running' });
+    return res.json({ status: 'already running', message: 'Bot já está rodando' });
   }
 
   const client = new Client({
@@ -53,7 +53,7 @@ app.post('/start-bot', async (req, res) => {
     await client.login(token);
     clients[userId] = client;
 
-    console.log(`[INFO] Bot iniciado com sucesso para ${userId}. Expira em ${durationMinutes} min`);
+    console.log(`[INFO] Bot iniciado com sucesso para ${userId}. Expira em ${durationMinutes} minutos`);
 
     // Expira automaticamente
     setTimeout(() => {
@@ -62,7 +62,7 @@ app.post('/start-bot', async (req, res) => {
       console.log(`[EXPIRED] Bot do user ${userId} expirado após ${durationMinutes} minutos`);
     }, durationMinutes * 60 * 1000);
 
-    res.json({ status: 'started', message: `Bot iniciado com sucesso!` });
+    res.json({ status: 'started', message: 'Bot iniciado com sucesso!' });
   } catch (err) {
     console.error(`[ERROR] Falha ao iniciar bot para ${userId}:`, err.message);
     res.status(500).json({ error: err.message });
@@ -75,5 +75,5 @@ app.get('/', (req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`[START] Hub rodando na porta ${port} - aguardando POSTs em /start-bot`);
+  console.log(`[START] KeyBot Hub rodando na porta ${port} - aguardando POSTs em /start-bot`);
 });
