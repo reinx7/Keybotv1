@@ -4,7 +4,7 @@ const app = express();
 
 app.use(express.json());
 
-// Permite CORS para o Lovable chamar sem erro
+// CORS completo para permitir chamadas do Lovable ou qualquer site
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -21,11 +21,15 @@ const clients = {};
 app.post('/start-bot', async (req, res) => {
   const { token, userId, durationMinutes } = req.body;
 
+  console.log(`[POST /start-bot] Recebido de ${userId} com duration ${durationMinutes} min`);
+
   if (!token || !userId || !durationMinutes) {
+    console.log('[ERRO] Campos faltando:', { token: !!token, userId: !!userId, durationMinutes: !!durationMinutes });
     return res.status(400).json({ error: 'Token, userId ou durationMinutes faltando' });
   }
 
   if (clients[userId]) {
+    console.log(`[INFO] Bot já rodando para ${userId}`);
     return res.json({ status: 'already running' });
   }
 
@@ -38,26 +42,29 @@ app.post('/start-bot', async (req, res) => {
   });
 
   client.once('ready', () => {
-    console.log(`Bot ${client.user.tag} ONLINE para user ${userId}`);
+    console.log(`[SUCCESS] Bot ${client.user.tag} ONLINE para user ${userId}`);
   });
 
   client.on('error', (err) => {
-    console.error(`Erro no bot ${userId}:`, err);
+    console.error(`[ERROR] Bot ${userId}:`, err.message);
   });
 
   try {
     await client.login(token);
     clients[userId] = client;
 
+    console.log(`[INFO] Bot iniciado com sucesso para ${userId}. Expira em ${durationMinutes} min`);
+
     // Expira automaticamente
     setTimeout(() => {
       client.destroy();
       delete clients[userId];
-      console.log(`Bot do user ${userId} expirado após ${durationMinutes} minutos`);
+      console.log(`[EXPIRED] Bot do user ${userId} expirado após ${durationMinutes} minutos`);
     }, durationMinutes * 60 * 1000);
 
     res.json({ status: 'started', message: `Bot iniciado com sucesso!` });
   } catch (err) {
+    console.error(`[ERROR] Falha ao iniciar bot para ${userId}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -68,5 +75,5 @@ app.get('/', (req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Hub rodando na porta ${port} - aguardando POSTs em /start-bot`);
+  console.log(`[START] Hub rodando na porta ${port} - aguardando POSTs em /start-bot`);
 });
