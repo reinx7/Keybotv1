@@ -4,14 +4,21 @@ const app = express();
 
 app.use(express.json());
 
+// Permite CORS para o Lovable poder chamar (importante!)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
 // Armazena os clientes (sub-bots) por userId
 const clients = {};
 
 app.post('/start-bot', async (req, res) => {
   const { token, userId, durationMinutes } = req.body;
 
-  if (!token || !userId) {
-    return res.status(400).json({ error: 'Token ou userId faltando' });
+  if (!token || !userId || !durationMinutes) {
+    return res.status(400).json({ error: 'Token, userId ou durationMinutes faltando' });
   }
 
   if (clients[userId]) {
@@ -55,7 +62,8 @@ app.get('/', (req, res) => {
   res.send('KeyBot Hub - Online');
 });
 
+// Inicia o servidor sem crashar (mesmo sem token fixo)
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Hub rodando na porta ${port}`);
+  console.log(`Hub rodando na porta ${port} - aguardando POSTs em /start-bot`);
 });
